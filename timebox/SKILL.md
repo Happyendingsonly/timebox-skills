@@ -187,9 +187,11 @@ won't).
 - **List responses are usually wrapped — and the key is per-endpoint:**
   `/project-tasks` → `project_tasks` (NOT `tasks` — parsing `.tasks` gives a
   silent empty list), `/spines` → `spines`, `/brains/:id/notes` → `notes`,
-  `/brain-dumps` → `brain_dumps`. But NOT always: `GET /workspaces` returns a
-  bare array. Handle both shapes
-  (`d if isinstance(d, list) else d.get("<key>", [])`).
+  `/brain-dumps` → `brain_dumps`. But NOT always: `GET /workspaces` AND
+  `GET /brains/:id/notes` return BARE arrays (the notes one caused false-alarm
+  failure reports on 2026-07-06). Handle both shapes — and mind the order:
+  `d if isinstance(d, list) else d.get("<key>", [])` (calling `.get` first
+  crashes on the bare-array endpoints).
 - **No `GET /projects`** — list projects via `GET /workspaces` then
   `GET /workspaces/:id/projects`.
 - **`GET /project-tasks` defaults to limit=50.** On busy boards your verify-by-re-read
