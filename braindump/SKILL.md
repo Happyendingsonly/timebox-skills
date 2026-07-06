@@ -24,7 +24,7 @@ everything on their mind. Accept mess: fragments, mixed topics, half-sentences.
 | Piece of an existing task | Subtask | `POST /tasks/<taskId>/subtasks` |
 | Idea not being built now | Brain-dump feed | `POST /brain-dumps` `{"content", "kind":"idea"}` |
 | Has a real deadline ("by Wednesday", "expires") | Task with `due_date` (UTC `Z`) + high priority | Board task; flag it loudly in the report |
-| Durable fact/decision/convention | Knowledge inbox (if the org keeps one, e.g. company-brain `inbox/`) | Write a dated markdown drop |
+| Durable fact/decision/convention | Knowledge inbox (if your org keeps a knowledge-base repo with an `inbox/`) | Write a dated markdown drop |
 | Question needing a human answer | Task titled as the question, or ask it right now if the user is present | Board task |
 | Personal (no project) | Loose task | `POST /tasks` |
 
