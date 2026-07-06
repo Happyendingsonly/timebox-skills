@@ -10,8 +10,8 @@ should stay near zero: bundle + spine + the LATEST handoff section + the baton
 file — never a repo re-scan.
 
 Uses `<timebox-skill-dir>/scripts/tb.sh` for ALL TimeBox calls (never raw curl).
-Lane map: the org's lane-table doc (company-brain `CONSTELLATION-TASK-FILING.md`)
-or `~/.timebox/config.json` `lanes`.
+Lane map: your org's lane-table doc (if it keeps one in its hub repo) or
+`~/.timebox/config.json` `lanes`.
 
 ## Steps, in order
 
