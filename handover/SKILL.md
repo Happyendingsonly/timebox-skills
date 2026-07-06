@@ -13,6 +13,29 @@ starts working in one paste instead of re-deriving everything.
 Uses `<timebox-skill-dir>/scripts/tb.sh` for all TimeBox calls (key chain +
 SPA-fallthrough guard; lanes from `~/.timebox/config.json`).
 
+## When to trigger (don't wait to be asked)
+
+- The session-limit / out-of-credits banner appears → **EMERGENCY PATH below,
+  immediately**. Retrying prompts against the wall wastes the last working turns
+  (one week's transcripts show ~40 messages burned this way, and two sessions
+  that died with no handover at all).
+- The conversation has auto-compacted 2-3+ times, or the topic has pivoted to a
+  different project → offer a handover; one thread once ran 5 days / 30
+  compactions across 4 projects and features had to be re-requested after each
+  compaction.
+- Context/usage is visibly low and there's a natural seam → offer it.
+
+## EMERGENCY PATH (≤2 minutes, when credits/limit are dying NOW)
+
+Skip the full reconcile. In order, stopping wherever the window dies:
+1. APPEND 3 lines to `SESSION-HANDOFF.md`: what shipped (SHA if pushed), what's
+   mid-stream, the single next action. Commit + push.
+2. Release the session lock: `tb.sh unlock <lane-uuid> <lock-task-uuid>`.
+3. `tb.sh POST /brain-dumps '{"text":"EMERGENCY handover <repo>: <the same 3 lines>","source":"agent"}'`
+   — the org bus survives even if the file never lands.
+Anything not done goes at the TOP of the next session's list, flagged as
+un-reconciled.
+
 ## Phase 1 — close out (delegate to /update logic, don't duplicate it)
 
 Run the full `/update` reconcile pass on the repo(s) touched this session:
@@ -38,10 +61,14 @@ the outgoing session, and stale the moment it's consumed). Contents, in order:
 # NEXT-SESSION — <repo> (<UTC timestamp>, written by /handover)
 
 ## Paste-me boot prompt
-> You are booting into <repo path> mid-stream. Read this file fully, then:
+> START IN: <absolute repo path> (cd there BEFORE launching the session).
+> Window label: <repo/topic — one or two words, so parallel terminals don't
+> double-pick this baton>.
+> You are booting into <repo> mid-stream. Read this file fully, then:
 > boot per SESSION-PROTOCOL (bundle + spines + SESSION-HANDOFF.md latest section
-> only), file your SESSION-LOCK, and continue at "Next actions" below. Do NOT
-> re-scan the repo or re-derive prior work — canon + this file are the truth.
+> only), file your SESSION-LOCK (`tb.sh lock …`), use tb.sh for ALL TimeBox
+> calls — never raw curl — and continue at "Next actions" below. Do NOT re-scan
+> the repo or re-derive prior work — canon + this file are the truth.
 
 ## State at handover
 - SHA: <origin/main sha> (pushed: yes/no — if no, WHAT is stranded where)

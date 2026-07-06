@@ -44,4 +44,6 @@ Uses `<timebox-skill-dir>/scripts/tb.sh` + the user's lane map from
   failing the whole report (tb.sh flags SPA fallthrough).
 - Keep the whole report scannable — this is a glance-at-your-day view, not a data
   dump. Compact tables, id prefixes (8 chars), no descriptions unless blocked.
+- If unsorted brain-dumps > 5, add one line suggesting a `/braindump` triage pass
+  (boots have surfaced 11 unsorted dumps without anyone acting on them).
 - End with a one-line suggestion: the single most urgent thing on the board and why.

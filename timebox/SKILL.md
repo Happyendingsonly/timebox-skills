@@ -9,12 +9,18 @@ TimeBox (timeboxinglife.com) is the org's hub and agent OS: boards (projects/lan
 brain-dump capture, Brains (wikilinked notes with backlinks), project spines, and an
 agent API (~179 endpoints, docs live at `https://timeboxinglife.com/agent-api.md`).
 
-**Helper:** use `scripts/tb.sh` in this skill directory for all API calls — it loads
-the key safely and catches the SPA-fallthrough trap:
+**Helper:** use `scripts/tb.sh` in this skill directory for **ALL API calls,
+including the boot calls — never raw curl**. (Week-of-2026-07-06 evidence: every
+SPA-fallthrough hit and every silent list-truncation came from sessions that
+bypassed tb.sh; sessions that used it had zero.) It loads the key safely,
+auto-adds `limit`, guards the SPA-fallthrough and double-pathed-base traps, and
+files/releases session locks:
 
 ```bash
 scripts/tb.sh GET /context/bundle
 scripts/tb.sh POST /projects/<project-uuid>/tasks '{"title":"My task"}'
+scripts/tb.sh lock   <project-uuid> <repo-name> "<scope note>"   # SESSION-LOCK in one call
+scripts/tb.sh unlock <project-uuid> <lock-task-uuid>             # complete + re-read verify
 ```
 
 ## SECURITY — non-negotiable
@@ -27,6 +33,13 @@ scripts/tb.sh POST /projects/<project-uuid>/tasks '{"title":"My task"}'
   real IDs from someone else's workspace.
 
 ## 1. Get your agent key
+
+**Key hygiene first:** never paste a key into the chat or `!` bash-input — it
+lands in the session transcript permanently (this happened once; the key had to
+be rotated). If the user pastes one anyway: write it straight into the config,
+never echo it back, and recommend rotation. If no key/config exists on this
+machine yet, STOP and have the user create it **in their own terminal**, not
+through the session.
 
 1. Sign in to TimeBox → Settings → Agents (or ask the workspace owner to issue you one).
 2. Store it in `~/.timebox/config.json` (create the file):
@@ -42,11 +55,32 @@ scripts/tb.sh POST /projects/<project-uuid>/tasks '{"title":"My task"}'
 ```
 
 3. `chmod 600 ~/.timebox/config.json`
-4. Verify (never prints the key): `scripts/tb.sh GET /context/bundle` → should
-   return JSON with `readiness`, `priorities`, `recent_activity`.
+4. **Scope preflight** (never prints the key): `scripts/tb.sh GET /context/bundle`
+   → should return JSON with `readiness`, `priorities`, `recent_activity`. A 403
+   here means the key lacks `me:read` — see the troubleshooting section below.
+   If this session will close tasks, confirm the key carries `tasks:close` NOW
+   (wildcard `*` keys don't include it) rather than discovering it at close-out.
 
 Key lookup order used by tb.sh: `$TIMEBOX_AGENT_KEY` env → `~/.timebox/config.json`
 → macOS Gatekeeper config (owner machines only).
+
+### Key-scope troubleshooting (decoding 403s)
+
+Keys look identical (`lk_live_…`) but carry different scopes depending on where
+they were issued. Verified failure modes (2026-07-06):
+
+- **`GET /context/bundle` 403s** → the key lacks `me:read` (keys from the old
+  "Agent keys" settings page) or is ingest-only (`builds:read` — keys from the
+  Agents page before 2026-07-06, and any key found in a settings.local.json
+  allowlist). Fix: re-issue from **Settings → Agents** (grants full `*`).
+- **Reads work but completing tasks 403s** (`PATCH /project-tasks` with done, or
+  `POST /tasks/:id/complete`) → `tasks:close` is a *dangerous* scope that wildcard
+  `*` keys do NOT include. Fix: have the workspace owner issue/upgrade a key with
+  explicit `tasks:close`. Until then, **fall back, don't fake it**: PATCH the
+  description to start `DONE <UTC date>: <evidence>`, leave the real checkbox to a
+  human, and say clearly in your report that close-out is pending a scoped key.
+- Diagnose in one line: a 403 body names the missing scope — read it before
+  assuming the key is dead.
 
 ## 2. Find your lanes (projects)
 
@@ -98,22 +132,29 @@ surfaces its notes.
 
 ## 5. Session boot ritual (how every agent session should start)
 
+0. **Be IN the repo.** If the cwd isn't the repo the session is about, stop and
+   have the user restart there — out-of-repo sessions load no project
+   instructions, file transcripts under the wrong project, and re-hit solved traps.
+
 ```bash
 scripts/tb.sh GET /context/bundle    # readiness, priorities, blocks, recent activity
 scripts/tb.sh GET /spines            # find your project's spine
 git fetch origin                     # FETCH FIRST — never act on a stale clone
 git log --oneline HEAD..origin/main  # remote ahead? fast-forward BEFORE reading state
+scripts/tb.sh lock <lane-uuid> <repo-name> "<one-line scope>"   # SESSION-LOCK (step, not optional)
 ```
 
 Then read the repo's `SESSION-HANDOFF.md`. Context lives in TimeBox + the handoff,
 not in any one session's memory.
 
-**Session lock (if your org runs the convention):** at boot, file a task titled
-`SESSION-LOCK: <repo>` under the subject lane (description: start time UTC +
-surface); complete it at close-out. If you find an open, recent lock for your repo,
-demote yourself to reporter — read and analyze, but no writes to code, board tasks,
-or the handoff. A lock idle for 3h is abandoned: take over by APPENDING a note to
-its description (never delete a stale lock — it's the audit trail).
+**Session-lock rules:** check the lane for an existing open `SESSION-LOCK: <repo>`
+BEFORE filing yours. Open + recent → demote yourself to reporter (read and
+analyze; no writes to code, board tasks, or the handoff). Idle 3h+ → abandoned:
+take over by APPENDING a note to its description (never delete a stale lock —
+it's the audit trail). At close-out:
+`scripts/tb.sh unlock <lane-uuid> <lock-task-uuid>` (completes + re-read verifies
+in one call). Lock adoption was 1/3 the night the rule shipped — it is a boot
+STEP, not a suggestion.
 
 ## Endpoint quick reference (covers ~95% of sessions)
 
@@ -128,7 +169,8 @@ its description (never delete a stale lock — it's the audit trail).
 | Complete board task | `PATCH /project-tasks/:id` `{"done":true,"status":"done"}` |
 | Loose/personal tasks | `GET/POST /tasks` · `POST /tasks/:id/complete` |
 | Subtasks | `GET/POST /tasks/:taskId/subtasks` |
-| Capture an idea | `POST /brain-dumps` `{"content","kind":"idea"}` |
+| Capture an idea | `POST /brain-dumps` `{"text":"…"}` (field is `text` — `content` returns `{"error":"Required"}`; brain NOTES use `content`, dumps use `text`) |
+| Read the dump feed | `GET /brain-dumps?limit=500` (default truncates) |
 | Brains / notes | `GET /brains` · `GET/POST /brains/:id/notes` · `GET/PATCH /brain-notes/:id` (full note + backlinks) |
 | Update a spine | `PATCH /spines/:id` |
 
@@ -141,9 +183,12 @@ won't).
 
 - **Wrong paths don't 404.** `POST /project-tasks` does not exist — it returns
   HTTP 200 + the SPA's HTML. Always check the body is JSON (tb.sh does this for you).
-- **List responses are usually wrapped:** `{"project_tasks":[...]}`, `{"spines":[...]}`,
-  `{"notes":[...]}` — but NOT always: `GET /workspaces` returns a bare array. Handle
-  both shapes (`d if isinstance(d, list) else d.get("<key>", [])`).
+- **List responses are usually wrapped — and the key is per-endpoint:**
+  `/project-tasks` → `project_tasks` (NOT `tasks` — parsing `.tasks` gives a
+  silent empty list), `/spines` → `spines`, `/brains/:id/notes` → `notes`,
+  `/brain-dumps` → `brain_dumps`. But NOT always: `GET /workspaces` returns a
+  bare array. Handle both shapes
+  (`d if isinstance(d, list) else d.get("<key>", [])`).
 - **No `GET /projects`** — list projects via `GET /workspaces` then
   `GET /workspaces/:id/projects`.
 - **`GET /project-tasks` defaults to limit=50.** On busy boards your verify-by-re-read
@@ -163,7 +208,12 @@ won't).
 - **Blocked work:** keep the task open and put `BLOCKED: <reason>` at the TOP of the
   description. There is no blocked_reason field — don't invent one.
 - Use `curl` (or tb.sh), not Python urllib — the system Python 3.9 fails TLS
-  against this server.
+  against this server (51 failures in one week of sessions that forgot this).
+- **Don't `source ~/.timebox.env`** — sourcing it has broken PATH mid-session
+  (`curl: command not found`). tb.sh reads the key itself; let it.
+- **No foreground `sleep` while waiting** on deploys/backfills — the harness
+  blocks it. Run the wait in a background command and poll, or just proceed and
+  re-check.
 - Note-list responses omit `content`; fetch `GET /brain-notes/:id` for full content
   + backlinks.
 
