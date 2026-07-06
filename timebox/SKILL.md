@@ -132,9 +132,10 @@ surfaces its notes.
 
 ## 5. Session boot ritual (how every agent session should start)
 
-0. **Be IN the repo.** If the cwd isn't the repo the session is about, stop and
-   have the user restart there — out-of-repo sessions load no project
-   instructions, file transcripts under the wrong project, and re-hit solved traps.
+0. **Be IN a real repo** — your org's hub repo (where the wiki/spines/lane map
+   live) or the subject repo, whichever your org prefers; never your home dir or
+   a random folder. Out-of-repo sessions load no project instructions, file
+   transcripts under the wrong project, and re-hit solved traps.
 
 ```bash
 scripts/tb.sh GET /context/bundle    # readiness, priorities, blocks, recent activity
