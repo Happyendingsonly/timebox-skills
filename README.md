@@ -16,6 +16,17 @@ show you what's pending — all from Claude Code slash commands.
 You'll need [Claude Code](https://claude.com/claude-code)
 (`npm install -g @anthropic-ai/claude-code`) and a TimeBox account.
 
+### Homebrew (recommended, macOS)
+
+```bash
+brew tap Happyendingsonly/timebox
+brew trust happyendingsonly/timebox   # one-time: Homebrew asks you to trust third-party taps
+brew install timebox-skills
+timebox-skills-install
+```
+
+### Or manual (any OS)
+
 ```bash
 git clone https://github.com/Happyendingsonly/timebox-skills ~/dev/timebox-skills
 mkdir -p ~/.claude/skills
@@ -24,8 +35,8 @@ for s in timebox update braindump tasksworkspace; do
 done
 ```
 
-Then open a new Claude Code session and type `/timebox` — it walks you through
-getting your agent key and connecting your projects.
+Either way: open a new Claude Code session and type `/timebox` — it walks you
+through getting your agent key and connecting your projects.
 
 ### Or just paste this into Claude Code
 
