@@ -11,6 +11,7 @@ show you what's pending — all from Claude Code slash commands.
 | `/braindump` | Dump raw thoughts; every item gets routed to the right project, idea list, or inbox |
 | `/tasksworkspace` | One glance at what's pending: deadlines, blocked items, open tasks by project |
 | `/handover` | Switching accounts or low on context? Close out clean + write a boot file for the next session |
+| `/promptguide` | Prompt patterns that provably work with agent sessions — or paste a draft prompt and get it tightened |
 
 ## Install (one time, ~2 minutes)
 
@@ -31,7 +32,7 @@ timebox-skills-install
 ```bash
 git clone https://github.com/Happyendingsonly/timebox-skills ~/dev/timebox-skills
 mkdir -p ~/.claude/skills
-for s in timebox update braindump tasksworkspace handover; do
+for s in timebox update braindump tasksworkspace handover promptguide; do
   ln -sfn ~/dev/timebox-skills/$s ~/.claude/skills/$s
 done
 ```
@@ -44,12 +45,13 @@ through getting your agent key and connecting your projects.
 ```
 Set me up with TimeBox (timeboxinglife.com) so you can manage my tasks:
 
-1. Clone https://github.com/Happyendingsonly/timebox-skills and symlink its 4
-   skill folders (timebox, update, braindump, tasksworkspace, handover) into ~/.claude/skills/.
+1. Clone https://github.com/Happyendingsonly/timebox-skills and symlink its
+   skill folders (timebox, update, braindump, tasksworkspace, handover,
+   promptguide) into ~/.claude/skills/.
 2. Read timebox/SKILL.md from the pack and walk me through setup step by step:
-   I'll get my agent key from TimeBox → Settings → Agents and paste it when you
-   ask — store it ONLY in ~/.timebox/config.json (chmod 600), never print or
-   commit it. Then help me fill in my projects (lanes) in that config.
+   I'll get my agent key from TimeBox → Settings → Agents and put it into
+   ~/.timebox/config.json (chmod 600) MYSELF from my own terminal — never ask
+   me to paste the key into this chat, and never print or commit it. Then help me fill in my projects (lanes) in that config.
 3. Verify the connection with the pack's tb.sh helper (GET /context/bundle should
    return JSON) and show me it works by listing what's pending on my board.
 
