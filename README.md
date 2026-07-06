@@ -12,6 +12,8 @@ show you what's pending — all from Claude Code slash commands.
 | `/tasksworkspace` | One glance at what's pending: deadlines, blocked items, open tasks by project |
 | `/handover` | Switching accounts or low on context? Close out clean + write a boot file for the next session |
 | `/promptguide` | Prompt patterns that provably work with agent sessions — or paste a draft prompt and get it tightened |
+| `/boot` | One-command session start: sync the repo, pull your board context, read the handoff, report where you left off |
+| `/smoke` | Needs-test cards: numbered click-by-click test steps when something ships; run one and it closes the task on pass |
 
 ## Install (one time, ~2 minutes)
 
@@ -32,7 +34,7 @@ timebox-skills-install
 ```bash
 git clone https://github.com/Happyendingsonly/timebox-skills ~/dev/timebox-skills
 mkdir -p ~/.claude/skills
-for s in timebox update braindump tasksworkspace handover promptguide; do
+for s in timebox update braindump tasksworkspace handover promptguide boot smoke; do
   ln -sfn ~/dev/timebox-skills/$s ~/.claude/skills/$s
 done
 ```
