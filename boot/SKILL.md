@@ -10,8 +10,8 @@ should stay near zero: bundle + spine + the LATEST handoff section + the baton
 file — never a repo re-scan.
 
 Uses `<timebox-skill-dir>/scripts/tb.sh` for ALL TimeBox calls (never raw curl).
-Lane map: your org's lane-table doc (if it keeps one in its hub repo) or
-`~/.timebox/config.json` `lanes`.
+Lane map: the org's lane-table doc (company-brain `CONSTELLATION-TASK-FILING.md`)
+or `~/.timebox/config.json` `lanes`.
 
 ## Steps, in order
 
@@ -27,13 +27,18 @@ Lane map: your org's lane-table doc (if it keeps one in its hub repo) or
    present (it's the outgoing session's resumption state — highest priority,
    consume it), then the repo `SESSION-HANDOFF.md` **latest section only**.
    Do NOT re-read whole repos or re-derive what canon records.
-4. **Session lock:** pull the subject lane and look for an open
-   `SESSION-LOCK: <repo>`:
+4. **Who else is online:** scan ALL lanes in the config for open `SESSION-LOCK:`
+   tasks — the lock table is the live-session map. Every open lock (any repo)
+   goes in the boot report so parallel windows know about each other from
+   second one. Then handle THIS repo's lock:
    - Open + recent (activity <3h) → **reporter mode**: announce it loudly
      (whose, since when); read/analyze only, no writes to code, board, or handoff.
    - Idle 3h+ → abandoned: take over by APPENDING a note to its description.
    - None → `tb.sh lock <lane-uuid> <repo-name> "<one-line scope>"`.
 5. **Report — one screen max:**
+   - 🔗 Live sessions FIRST: `<repo> (<lock-id 8ch>, open <age>)` per open lock,
+     or "no other sessions live" — this line is what keeps parallel windows
+     from colliding
    - SHA + sync state (`origin/main abc1234, in sync`)
    - Where the last session left off (from baton/handoff, 2-3 lines)
    - 🔥 deadlines + 🚫 blocked items from the bundle, if any
