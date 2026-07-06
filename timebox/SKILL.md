@@ -51,14 +51,17 @@ Key lookup order used by tb.sh: `$TIMEBOX_AGENT_KEY` env → `~/.timebox/config.
 ## 2. Find your lanes (projects)
 
 Tasks are filed by SUBJECT: a task lands under the project of the app it is ABOUT.
-List boards and record the project UUIDs you work with into your config's `lanes`:
+**There is no `GET /projects`** — discovery goes through workspaces:
 
 ```bash
-scripts/tb.sh GET "/project-tasks?project_id=<project-uuid>"   # list a board
+scripts/tb.sh GET /workspaces                                # your workspaces (BARE array)
+scripts/tb.sh GET /workspaces/<workspace-uuid>/projects      # projects in one workspace
+scripts/tb.sh GET "/project-tasks?project_id=<project-uuid>&limit=200"   # a board's tasks
 ```
 
-If your org keeps a lane table (e.g. `CONSTELLATION-TASK-FILING.md` in the hub repo),
-copy the lane→project IDs from there instead of guessing.
+Record the project UUIDs you work with into your config's `lanes`. If your org keeps
+a lane table (a task-filing doc in its hub repo), copy the lane→project IDs from
+there instead of guessing.
 
 ## 3. Set up a spine for a project
 
@@ -107,8 +110,11 @@ not in any one session's memory.
 
 - **Wrong paths don't 404.** `POST /project-tasks` does not exist — it returns
   HTTP 200 + the SPA's HTML. Always check the body is JSON (tb.sh does this for you).
-- **List responses are wrapped:** `{"project_tasks":[...]}`, `{"spines":[...]}`,
-  `{"notes":[...]}` — never assume bare arrays.
+- **List responses are usually wrapped:** `{"project_tasks":[...]}`, `{"spines":[...]}`,
+  `{"notes":[...]}` — but NOT always: `GET /workspaces` returns a bare array. Handle
+  both shapes (`d if isinstance(d, list) else d.get("<key>", [])`).
+- **No `GET /projects`** — list projects via `GET /workspaces` then
+  `GET /workspaces/:id/projects`.
 - **`GET /project-tasks` defaults to limit=50.** On busy boards your verify-by-re-read
   will silently miss fresh tasks — always pass `&limit=200` when listing to verify.
 - **Create board tasks** via `POST /projects/:projectId/tasks` (title required;
