@@ -14,7 +14,9 @@ see `/timebox` for setup). Load the user's lane map from that config.
 
 ## Steps
 
-1. **Gather what actually happened.**
+1. **Gather what actually happened — at the current SHA.**
+   - `git fetch origin` first; if `origin/main` is ahead of HEAD, sync before
+     reading anything (never reconcile from a stale clone).
    - `git log --oneline` since the last handoff entry (or last /update) in this repo.
    - The current session's work, if any.
    - Ask the user "anything shipped outside this repo?" if context is thin.
@@ -36,8 +38,11 @@ see `/timebox` for setup). Load the user's lane map from that config.
    - Board tasks: `tb.sh PATCH /project-tasks/<id> '{"done":true,"status":"done"}'`
    - Brain-dump/loose tasks: `tb.sh POST /tasks/<id>/complete`
 
-5. **Verify server-side.** Re-read the task/board and confirm `status: done` /
-   `done: true` in the response. A 200 alone is NOT proof. Report each verification.
+5. **Verify server-side, at a SHA.** Re-read the task/board and confirm
+   `status: done` / `done: true` in the response — a 200 alone is NOT proof. Any
+   "verified" claim you record must cite the commit SHA it ran at, and that SHA
+   must equal `origin/main` at that moment; if origin moved mid-session, re-verify
+   at the new SHA first. Report each verification with its SHA.
 
 6. **Partial or blocked work stays open** with `BLOCKED: <reason>` prefixed to the
    top of the description (PATCH the description; there is no blocked_reason field).
@@ -48,12 +53,17 @@ see `/timebox` for setup). Load the user's lane map from that config.
    - Deadlines in UTC `Z` format only.
    - Dedup first: check the lane's existing open tasks before creating.
 
-8. **Update the repo.** If this repo keeps a `SESSION-HANDOFF.md`, append/refresh the
-   latest-state section. Commit per the repo's conventions if the user wants;
-   **never force-push shared branches.**
+8. **Update the repo.** If this repo keeps a `SESSION-HANDOFF.md`, APPEND the
+   latest-state section (handoffs are append-only with timestamps — never rewrite
+   an earlier session's record). Commit per the repo's conventions if the user
+   wants; **never force-push shared branches** — a rejected push means integrate,
+   not force.
+9. **Close your session lock** (if the org runs the SESSION-LOCK convention and
+   this session opened one): complete the `SESSION-LOCK: <repo>` task with the
+   real verbs + re-read verify.
 
-9. **Report** a compact table: task → action taken (completed✓verified / created /
-   blocked / skipped-duplicate) → id.
+10. **Report** a compact table: task → action taken (completed✓verified / created /
+    blocked / skipped-duplicate) → id, citing the verification SHA.
 
 ## Guardrails
 

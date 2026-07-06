@@ -101,10 +101,19 @@ surfaces its notes.
 ```bash
 scripts/tb.sh GET /context/bundle    # readiness, priorities, blocks, recent activity
 scripts/tb.sh GET /spines            # find your project's spine
+git fetch origin                     # FETCH FIRST — never act on a stale clone
+git log --oneline HEAD..origin/main  # remote ahead? fast-forward BEFORE reading state
 ```
 
 Then read the repo's `SESSION-HANDOFF.md`. Context lives in TimeBox + the handoff,
 not in any one session's memory.
+
+**Session lock (if your org runs the convention):** at boot, file a task titled
+`SESSION-LOCK: <repo>` under the subject lane (description: start time UTC +
+surface); complete it at close-out. If you find an open, recent lock for your repo,
+demote yourself to reporter — read and analyze, but no writes to code, board tasks,
+or the handoff. A lock idle for 3h is abandoned: take over by APPENDING a note to
+its description (never delete a stale lock — it's the audit trail).
 
 ## Endpoint quick reference (covers ~95% of sessions)
 

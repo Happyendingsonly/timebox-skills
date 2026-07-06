@@ -37,6 +37,9 @@ Uses `<timebox-skill-dir>/scripts/tb.sh` + the user's lane map from
 - Read-only by default: this command NEVER completes, creates, or edits tasks.
   If the user wants changes after seeing the board, hand off to `/update`.
 - Done tasks are noise — exclude them unless the user asks for history.
+- `SESSION-LOCK:` titled tasks are coordination plumbing, not work — exclude them
+  from the pending lists; show at most a one-line footer ("2 active session locks")
+  so the user knows which repos are claimed.
 - If a lane in the config returns HTML or errors, say so per-lane rather than
   failing the whole report (tb.sh flags SPA fallthrough).
 - Keep the whole report scannable — this is a glance-at-your-day view, not a data
