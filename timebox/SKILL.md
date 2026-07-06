@@ -106,6 +106,28 @@ scripts/tb.sh GET /spines            # find your project's spine
 Then read the repo's `SESSION-HANDOFF.md`. Context lives in TimeBox + the handoff,
 not in any one session's memory.
 
+## Endpoint quick reference (covers ~95% of sessions)
+
+| Purpose | Endpoint |
+|---|---|
+| Boot: situational awareness | `GET /context/bundle` |
+| Boot: project wiring | `GET /spines` · `GET /ingest/events?spine_id=<id>` |
+| Discover projects | `GET /workspaces` (bare array!) → `GET /workspaces/:id/projects` |
+| Read a board | `GET /project-tasks?project_id=<id>&limit=200` |
+| One board task | `GET /projects/:projectId` · `PATCH /project-tasks/:id` |
+| Create board task | `POST /projects/:projectId/tasks` |
+| Complete board task | `PATCH /project-tasks/:id` `{"done":true,"status":"done"}` |
+| Loose/personal tasks | `GET/POST /tasks` · `POST /tasks/:id/complete` |
+| Subtasks | `GET/POST /tasks/:taskId/subtasks` |
+| Capture an idea | `POST /brain-dumps` `{"content","kind":"idea"}` |
+| Brains / notes | `GET /brains` · `GET/POST /brains/:id/notes` · `GET/PATCH /brain-notes/:id` (full note + backlinks) |
+| Update a spine | `PATCH /spines/:id` |
+
+**Any endpoint NOT in this table: fetch `https://timeboxinglife.com/agent-api.md`
+and grep it BEFORE calling. Never guess a path** — wrong paths return 200 + HTML,
+not a 404, so a guessed path can look like success (tb.sh catches this, raw curl
+won't).
+
 ## API gotchas (hard-won — trust these)
 
 - **Wrong paths don't 404.** `POST /project-tasks` does not exist — it returns
