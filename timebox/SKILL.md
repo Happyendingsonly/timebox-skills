@@ -154,6 +154,10 @@ won't).
   `POST /tasks/:id/complete`; board tasks → `PATCH /project-tasks/:id` with
   `{"done":true,"status":"done"}`. **Then re-read the task and confirm the server
   says done — a 200 alone is not proof.**
+- **`done:true` in a CREATE body is silently ignored** — `POST /projects/:id/tasks`
+  accepts it, 200s, and stores `done:false`. Create first, then PATCH done.
+  And PATCH by **full uuid**: a short-id PATCH can set `status` but not `done`
+  (verified 2026-07-06 — the re-read catches this).
 - **Datetimes must be UTC `Z` format** (`2026-07-09T05:59:00Z`); offset strings
   (`+00:00`) are rejected with 400 invalid_string.
 - **Blocked work:** keep the task open and put `BLOCKED: <reason>` at the TOP of the
